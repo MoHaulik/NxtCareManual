@@ -51,6 +51,10 @@
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.06); }
 }
+@keyframes barFill {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
 body {
   background: var(--bg-gradient);
   background-size: 150% 150%;
@@ -191,6 +195,36 @@ main { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column;
 .gesture .icon { font-size: 4rem; line-height: 1; margin-bottom: 12px; display: block; animation: pulse 2.5s ease-in-out infinite; }
 .gesture h4 { font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; }
 .gesture p { font-size: 0.95rem; color: var(--text-muted); margin: 0; }
+/* AR-room preview backdrop — simulates Quest 3 passthrough at night */
+.preview-stage {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 22px; padding: 56px 32px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 16px 0 8px 0; position: relative; overflow: hidden;
+}
+.preview-stage::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(14,165,233,0.18) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hud-mockup {
+  width: 100%; max-width: 620px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 100px;
+  padding: 22px 40px;
+  box-shadow: 0 12px 32px rgba(14, 165, 233, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  position: relative; z-index: 1;
+}
+.hud-text {
+  color: var(--text-main); font-weight: 800; font-size: 1.45rem;
+  text-align: center; letter-spacing: -0.2px;
+  margin-bottom: 14px; white-space: nowrap;
+}
+.hud-bar-track { height: 22px; border-radius: 11px; background: rgba(14, 165, 233, 0.12); overflow: hidden; position: relative; }
+.hud-bar-fill { height: 100%; border-radius: 11px; background: linear-gradient(90deg, var(--accent-light) 0%, var(--accent) 100%); width: 0%; animation: barFill 6s linear infinite; }
+.preview-caption { text-align: center; font-size: 0.95rem; color: var(--text-muted); margin-top: 12px; font-style: italic; }
 /* Time-pill row */
 .time-row {
   display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
@@ -289,6 +323,8 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
   body { padding: 24px 16px; }
   .card { padding: 28px 22px; }
   .menu-bar { padding: 14px 20px; }
+  .hud-text { font-size: 1.05rem; white-space: normal; }
+  .preview-stage { padding: 36px 18px; }
 }
 </style>
 </head>
@@ -296,7 +332,7 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
 <header>
   <nav class="menu-bar">
     <div class="brand">NXT<span>/Care</span></div>
-    <div class="doc-meta">Personalemanual <span class="pill">v1.4 · DK</span></div>
+    <div class="doc-meta">Personalemanual <span class="pill">v1.5 · DK</span></div>
   </nav>
 </header>
 <main>
@@ -306,24 +342,25 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
   <div class="quick-nav">
     <a href="#exit">Afslut sessionen</a>
     <a href="#first-time">Før du starter</a>
-    <a href="#crystal">Krystal Banen</a>
+    <a href="#crystal">Krystalbanen</a>
     <a href="#dental">Bag Tænderne</a>
     <a href="#mahjong">Mahjong</a>
     <a href="#butterfly">Sommer Fugl</a>
-    <a href="#puste">Puste Ven</a>
+    <a href="#puste">Pusteven</a>
     <a href="#info-videos">Informationsvideoer</a>
     <a href="#cartoons">Tegnefilm</a>
     <a href="#trouble">Fejlfinding</a>
   </div>
 </section>
-<!-- ─── Universal exit gesture (moved to top) ─── -->
+<!-- ─── Universal exit gesture (instruction first, text below) ─── -->
 <section class="card" id="exit">
   <h2><span class="num pink">!</span>Sådan afslutter du en session</h2>
   <div class="tag-row">
     <span class="tag pink">Vigtigt, lær dette</span>
-    <span class="tag">Universel gestik</span>
+    <span class="tag">Universel bevægelse</span>
   </div>
-  <p>Alle NXT/Care-oplevelser har <strong>samme exit-gestik</strong>. Barnet behøver ikke trykke på knapper, du heller ikke. Det er den eneste gestik du som personale skal kende.</p>
+
+  <!-- Instruction first, big and visual -->
   <div class="gesture-row">
     <div class="gesture">
       <span class="icon">👏</span>
@@ -332,8 +369,8 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
     </div>
     <div class="gesture">
       <span class="icon">⏱️</span>
-      <h4>Hold i 6 sekunder</h4>
-      <p>En hvid HUD-bjælke viser nedtælling så barnet ved det virker.</p>
+      <h4>Hold hænderne sammen i 6 sek.</h4>
+      <p>En hvid bjælke viser nedtælling, så barnet ved at det virker.</p>
     </div>
     <div class="gesture">
       <span class="icon">✨</span>
@@ -341,13 +378,27 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
       <p>Brillen vender tilbage til startskærmen. Sikkert hver gang.</p>
     </div>
   </div>
+
+  <!-- Visual reference of the white bar shown in the headset -->
+  <h3>Sådan ser den hvide bjælke ud i brillen</h3>
+  <div class="preview-stage">
+    <div class="hud-mockup">
+      <div class="hud-text">👏 Hold sammen i 4s for at lukke</div>
+      <div class="hud-bar-track"><div class="hud-bar-fill"></div></div>
+    </div>
+  </div>
+  <p class="preview-caption">Dette er hvad barnet ser inde i brillen, mens hænderne holdes sammen. Den lyseblå bjælke fyldes ud over 6 sekunder, og teksten tæller sekunderne ned.</p>
+
+  <!-- Explanation text below the instruction -->
+  <p>Alle NXT/Care-applikationer har <strong>samme afsluttende bevægelse</strong>. Barnet behøver ikke trykke på knapper, det gør du heller ikke. Uanset hvilken NXT/Care-applikation du bruger, afslutter du altid med den samme bevægelse, og det er den eneste bevægelse du som personale skal kende.</p>
+
   <div class="callout success">
     <strong>Hvorfor 6 sekunder?</strong> For ikke at afslutte ved et uheld hvis barnet kommer til at samle hænderne under leg. Du kan altid annullere ved bare at trække hænderne fra hinanden, så starter nedtællingen forfra næste gang.
   </div>
   <h3>Hvis barnet ikke selv kan klappe</h3>
   <p>Du kan ikke ligefrem "tage hænderne fra barnet", men du kan holde dine egne to håndflader sammen foran brillens kameraer (ca. 30 cm fra ansigtet) i 6 sekunder. Brillen sporer hvilke som helst hænder der er synlige, så det virker uanset hvem der står foran.</p>
   <h3>Alternativ exit (kun personale)</h3>
-  <p>Øverste højre hjørne har et lille <span class="inline-code">×</span>-symbol i overlay'et. Tryk her hvis klap-gestikken ikke virker, fx hvis hænderne er ude af brillens synsfelt eller dækket af et tæppe. Dette er en personale-fallback, ikke noget barnet skal vide om.</p>
+  <p>Øverste højre hjørne har et lille <span class="inline-code">×</span>-symbol i startmenuen. Tryk her hvis klap-bevægelsen ikke virker, fx hvis hænderne er ude af brillens synsfelt eller dækket af et tæppe. Dette er en personale-fallback, ikke noget barnet skal vide om.</p>
 </section>
 <!-- ─── Section 0 — Before you start ─── -->
 <section class="card" id="first-time">
@@ -367,7 +418,7 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
     <div class="step">
       <div class="step-num">2</div>
       <h4>Vælg oplevelse</h4>
-      <p>Aktivt spil ved nålestik (Krystal Banen) eller rolig vejrtrækning før/efter (Puste Ven).</p>
+      <p>Aktivt spil ved nålestik (Krystalbanen) eller rolig vejrtrækning før/efter (Pusteven).</p>
     </div>
     <div class="step">
       <div class="step-num">3</div>
@@ -384,15 +435,15 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
     <strong>Vigtigt:</strong> NXT/Care kører i AR-passthrough. Barnet kan stadig se dig, sengen, sin egen krop og dig der laver proceduren. Det er bevidst, det reducerer angst sammenlignet med fuld VR.
   </div>
 </section>
-<!-- ─── Section 1 — Krystal Banen ─── -->
+<!-- ─── Section 1 — Krystalbanen ─── -->
 <section class="card" id="crystal">
   <div class="exp-hero">
     <div class="exp-hero-content">
       <div class="exp-hero-name">Aktiv distraktion · 2–10 min</div>
-      <h3>💎 Krystal Banen</h3>
+      <h3>💎 Krystalbanen</h3>
       <p>Et hurtigt distraktionsspil til brug under nålestik, blodprøver, IV-anlæggelse og andre én-arms-procedurer.</p>
     </div>
-    <img class="exp-hero-thumb" src="Krystal.png" alt="Krystal Banen, thumbnail" loading="lazy">
+    <img class="exp-hero-thumb" src="Krystal.png" alt="Krystalbanen, thumbnail" loading="lazy">
   </div>
   <div class="tag-row">
     <span class="tag">Aktivt spil</span>
@@ -405,7 +456,7 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
     <div class="step">
       <div class="step-num">1</div>
       <h4>Tryk Start</h4>
-      <p>Tryk på "▶" i overlay'et før brillen sættes på. Eller lad barnet pege og klikke selv.</p>
+      <p>Tryk på "▶" i startmenuen før brillen sættes på. Eller lad barnet pege og klikke selv.</p>
     </div>
     <div class="step">
       <div class="step-num">2</div>
@@ -423,12 +474,35 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
       <p>Krystaller giver point. Bomber tager liv (3 i alt). Hastigheden stiger gradvist.</p>
     </div>
   </div>
+  <h3>Hvornår bruger man den?</h3>
+  <div class="step-grid">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h4>Under nålestik</h4>
+      <p>Aktiv distraktion under blodprøver, vaccinationer og andre kortvarige stik.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h4>Ved IV-anlæggelse</h4>
+      <p>Holder den frie arm beskæftiget mens den anden arm holdes stille.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h4>Ved sårpleje</h4>
+      <p>Distraherer fra ubehag og giver barnet noget aktivt at fokusere på.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h4>Ved kortere ventetid</h4>
+      <p>2–10 minutter, perfekt som lille spilpause der ikke trætter barnet.</p>
+    </div>
+  </div>
   <h3>Sådan introducerer du det</h3>
   <div class="script-box">
     "Du skal hjælpe en lille magisk boble med at samle krystaller. Du styrer ved bare at vrikke lidt med håndleddet, den side du vrider til, den side går boblen. Pas på de sorte bomber! Når jeg siger til, prøver du at få så mange krystaller som muligt."
   </div>
   <div class="callout success">
-    <strong>Fordel ved Krystal Banen:</strong> kræver fuld koncentration men ingen læsning. Barnets opmærksomhed flyttes væk fra nålen til boblen.
+    <strong>Fordel ved Krystalbanen:</strong> kræver fuld koncentration men ingen læsning. Barnets opmærksomhed flyttes væk fra nålen til boblen.
   </div>
   <h3>Hvad du skal kigge efter</h3>
   <ul>
@@ -437,22 +511,45 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
     <li><strong>Game Over-skærm efter 3 liv</strong>, appen genstarter automatisk efter 4 sekunder. Barnet behøver ikke gøre noget.</li>
   </ul>
 </section>
-<!-- ─── Section 2 — Puste Ven ─── -->
+<!-- ─── Section 2 — Pusteven ─── -->
 <section class="card" id="puste">
   <div class="exp-hero pink">
     <div class="exp-hero-content">
       <div class="exp-hero-name">Rolig vejrtrækning · 5 min</div>
-      <h3>🫧 Puste Ven</h3>
+      <h3>🫧 Pusteven</h3>
       <p>Guidet boks-vejrtrækning med en venlig figur. Hænderne kræves ikke under selve øvelsen, barnet bruger kun stemmen og åndedrættet.</p>
     </div>
-    <img class="exp-hero-thumb" src="pusteven.png" alt="Puste Ven, thumbnail" loading="lazy">
+    <img class="exp-hero-thumb" src="pusteven.png" alt="Pusteven, thumbnail" loading="lazy">
   </div>
   <div class="tag-row">
     <span class="tag pink">Passiv oplevelse</span>
     <span class="tag pink">Mikrofon</span>
     <span class="tag pink">Alder 4–12</span>
   </div>
-  <p>Puste Ven er en lille bobleagtig figur der sjovt vokser når barnet skal trække vejret ind, holder pause, og puster bobler ud sammen med barnet. Mikrofonen registrerer barnets pust, jo kraftigere pust, jo flere bobler.</p>
+  <p>Pusteven er en lille bobleagtig figur der sjovt vokser når barnet skal trække vejret ind, holder pause, og puster bobler ud sammen med barnet. Mikrofonen registrerer barnets pust, jo kraftigere pust, jo flere bobler.</p>
+  <h3>Sådan starter spillet</h3>
+  <div class="step-grid">
+    <div class="step pink">
+      <div class="step-num">1</div>
+      <h4>Tryk på 🫧 Start</h4>
+      <p>Stort puste-ikon på startskærmen. Tryk én gang for at åbne sessionen.</p>
+    </div>
+    <div class="step pink">
+      <div class="step-num">2</div>
+      <h4>Tillad mikrofon</h4>
+      <p>Første gang appen kører på en ny brille, beder Quest 3 om mikrofon-tilladelse. Sig "Tillad".</p>
+    </div>
+    <div class="step pink">
+      <div class="step-num">3</div>
+      <h4>Følg figurens tempo</h4>
+      <p>Figuren vokser når barnet skal puste ind, krymper når der pustes ud. Tekstboblen siger hvad der skal ske.</p>
+    </div>
+    <div class="step pink">
+      <div class="step-num">4</div>
+      <h4>Pust bobler ud</h4>
+      <p>Mikrofonen registrerer barnets pust, jo kraftigere pust, jo flere bobler kommer der.</p>
+    </div>
+  </div>
   <h3>Hvornår bruger man den?</h3>
   <div class="step-grid">
     <div class="step pink">
@@ -541,6 +638,29 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
       <p>Når den grønne ring er på den rigtige tand, knib tommel og pegefinger sammen. Bakterien forsvinder med en lille gnistsky.</p>
     </div>
   </div>
+  <h3>Hvornår bruger man den?</h3>
+  <div class="step-grid">
+    <div class="step teal">
+      <div class="step-num">1</div>
+      <h4>Ved tandlægebesøg</h4>
+      <p>Spillets tema spejler proceduren. Barnet får et symbolsk greb om situationen.</p>
+    </div>
+    <div class="step teal">
+      <div class="step-num">2</div>
+      <h4>Ved mundpleje</h4>
+      <p>Distraherer mens tandbørstning eller mundskylning udføres af personalet.</p>
+    </div>
+    <div class="step teal">
+      <div class="step-num">3</div>
+      <h4>Ved behandlingsangst</h4>
+      <p>Børn med tand- eller mundangst får en aktiv rolle i stedet for en passiv frygt.</p>
+    </div>
+    <div class="step teal">
+      <div class="step-num">4</div>
+      <h4>Som distraktion ellers</h4>
+      <p>Også fin ved nålestik, blodprøver, eller bare som underholdning under ventetid.</p>
+    </div>
+  </div>
   <h3>Sådan introducerer du det</h3>
   <div class="script-box">
     "Du har et sæt magiske tænder foran dig. Der kommer små sorte bakterier og hopper rundt. Når de sætter sig på en tand, skal du dreje med håndleddet, vrid lidt fra side til side, og når det grønne sigtekorn er på Karius, så knib tommel og pegefinger sammen for at børste dem væk. Lad os prøve at se om vi kan holde tænderne hvide!"
@@ -598,6 +718,29 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
       <p>Sigt på en brik og knib tommel + pegefinger sammen. Find så en til med samme symbol. Ved match: brikker letter og forsvinder med fanfare. Ved fejl: rødt blink, prøv igen.</p>
     </div>
   </div>
+  <h3>Hvornår bruger man den?</h3>
+  <div class="step-grid">
+    <div class="step purple">
+      <div class="step-num">1</div>
+      <h4>Ved lange undersøgelser</h4>
+      <p>Drop-infusion, EEG, lange ventetider. Op til 30 min uden tab af engagement.</p>
+    </div>
+    <div class="step purple">
+      <div class="step-num">2</div>
+      <h4>Til sengebundne børn</h4>
+      <p>Ingen pludselige bevægelser, ingen høje lyde. Roligt fokus i lang tid.</p>
+    </div>
+    <div class="step purple">
+      <div class="step-num">3</div>
+      <h4>Til søskende & forældre</h4>
+      <p>Voksne kan også finde det meditativt mens et barn er til kontrol.</p>
+    </div>
+    <div class="step purple">
+      <div class="step-num">4</div>
+      <h4>Ved ventetid</h4>
+      <p>Diskret og roligt, forstyrrer ikke andre patienter eller personale.</p>
+    </div>
+  </div>
   <h3>Sådan introducerer du det</h3>
   <div class="script-box">
     "Du skal hjælpe en ven med at rydde et stort spilbræt. Pege-strålen er din magiske finger, find to brikker der ligner hinanden, og knib tommel og pegefinger sammen på dem begge. Brikker der har noget ovenpå sig kan ikke tages, kig efter dem der er fri."
@@ -633,7 +776,7 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
     <span class="tag">Alder 3+</span>
   </div>
   <p>Når barnet løfter hånden, sidder en lille sommerfugl over den og følger hver bevægelse. Når hånden bevæges, spirer farverige blomster frem i luften. Sommerfuglen flyver over til hver blomst, drikker nektar, og blomsten forsvinder i en eksplosion af lys. Hver session viser en tilfældig sommerfuglart, Monarch, Blue Morpho, Sunset Fairy, Starry Night, og flere.</p>
-  <h3>Sådan starter oplevelsen</h3>
+  <h3>Sådan starter spillet</h3>
   <div class="step-grid">
     <div class="step lavender">
       <div class="step-num">1</div>
@@ -656,6 +799,29 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
       <p>Barnet kan stoppe op og lade sommerfuglen sidde, eller bevæge hånden mere for flere blomster. Begge dele er rigtige.</p>
     </div>
   </div>
+  <h3>Hvornår bruger man den?</h3>
+  <div class="step-grid">
+    <div class="step lavender">
+      <div class="step-num">1</div>
+      <h4>Ved sensorisk overvældelse</h4>
+      <p>Bløde farver, langsomme bevægelser, ingen pludselige lyde. God ved overstimulering.</p>
+    </div>
+    <div class="step lavender">
+      <div class="step-num">2</div>
+      <h4>Til neurodivergente børn</h4>
+      <p>Forudsigelig, ingen sociale eller præstations-krav. God ved autismespektret.</p>
+    </div>
+    <div class="step lavender">
+      <div class="step-num">3</div>
+      <h4>Til de mindste (3–5 år)</h4>
+      <p>Kræver kun at man bevæger hånden, ingen instruktioner, ingen regler.</p>
+    </div>
+    <div class="step lavender">
+      <div class="step-num">4</div>
+      <h4>I palliativ pleje</h4>
+      <p>Roligt sansetilbud der kræver minimal energi. Æstetisk oplevelse selv ved lav muskelkraft.</p>
+    </div>
+  </div>
   <h3>Sådan introducerer du det</h3>
   <div class="script-box">
     "Der kommer en lille sommerfugl ned og sætter sig over din hånd. Når du bevæger hånden, vokser der blomster frem ud af luften, og sommerfuglen flyver hen og drikker af dem. Du kan ikke gøre det forkert. Bare bevæg hånden som du har lyst til."
@@ -663,7 +829,7 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
   <div class="callout">
     <strong>Ingen mål, ingen score, ingen tid:</strong> Sommer Fugl er den eneste oplevelse uden vinde- eller tabe-mekanik. Den er designet som en ren sansestimulerende rolig oplevelse. Sessionen slutter kun når du eller barnet klap-afslutter.
   </div>
-  <h3>Særligt velegnet til</h3>
+  <h3>Hvad du skal kigge efter</h3>
   <ul class="purple">
     <li><strong>Børn på autismespektret</strong>, forudsigelig, sansestyrket, ingen sociale eller præstations-krav.</li>
     <li><strong>Sensorisk overvældede børn</strong>, bløde farver, langsomme bevægelser, ingen pludselige lyde.</li>
@@ -699,15 +865,7 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
   <div class="callout">
     <strong>Denne manual forklarer ikke videoernes indhold</strong>, de er udarbejdet af afdelingsledelsen og opdateres centralt. I stedet beskriver vi <em>hvordan</em> videoerne fremstår for barnet, og hvordan de afsluttes.
   </div>
-  <h3>Sådan fremstår videoen for barnet</h3>
-  <ul class="amber">
-    <li><strong>Stort fladt videopanel foran barnet</strong>, ca. 1,7 m bredt, placeret 1,5 m fremme. Som at se en biograf-skærm svæve i luften.</li>
-    <li><strong>Panelet følger blidt med hovedet</strong>, drejer barnet hovedet, glider panelet med, så det altid er foran. Det "låser sig" ikke fast på væggen i rummet.</li>
-    <li><strong>Panelet holder sig vandret</strong>, tipper aldrig sidelæns eller op/ned, selv om barnet kigger op eller ned. Det reducerer kvalme.</li>
-    <li><strong>Hospitalsrummet er stadig synligt</strong> rundt om panelet, passthrough er aktivt. Barnet kan stadig se dig og sengen.</li>
-    <li><strong>Lyden afspilles</strong> i brillens indbyggede højtalere. Hvis tilladelser ikke er givet, starter videoen muted og slår automatisk lyden til efter 1 sekund.</li>
-  </ul>
-  <h3>Sådan starter du en video</h3>
+  <h3>Sådan starter spillet</h3>
   <div class="step-grid">
     <div class="step amber">
       <div class="step-num">1</div>
@@ -717,7 +875,7 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
     <div class="step amber">
       <div class="step-num">2</div>
       <h4>Tryk afspil</h4>
-      <p>Stort hvidt afspil-ikon midt på skærmen. Tryk én gang i overlay'et, eller bed barnet pege og knibe inde i brillen.</p>
+      <p>Stort hvidt afspil-ikon midt på skærmen. Tryk én gang i startmenuen, eller bed barnet pege og knibe inde i brillen.</p>
     </div>
     <div class="step amber">
       <div class="step-num">3</div>
@@ -730,6 +888,37 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
       <p>Læn dig tilbage og lad videoen køre. Den varer typisk 2–4 minutter. Du kan blive ved siden af og tale med barnet undervejs hvis det er beroligende.</p>
     </div>
   </div>
+  <h3>Hvornår bruger man den?</h3>
+  <div class="step-grid">
+    <div class="step amber">
+      <div class="step-num">1</div>
+      <h4>Før CT-scanning</h4>
+      <p>Reducerer angst inden indgrebet ved at vise scanneren fra patientens perspektiv.</p>
+    </div>
+    <div class="step amber">
+      <div class="step-num">2</div>
+      <h4>Før lattergas</h4>
+      <p>Viser masken og effekten, så førstegangsbrug ikke er en overraskelse.</p>
+    </div>
+    <div class="step amber">
+      <div class="step-num">3</div>
+      <h4>Før blodprøve / venflon</h4>
+      <p>Hele forløbet vist på forhånd. Brug også Krystalbanen under selve stikket.</p>
+    </div>
+    <div class="step amber">
+      <div class="step-num">4</div>
+      <h4>Dagen før eller minutter før</h4>
+      <p>Mest effektivt 5–10 minutter før, eller dagen før til de mest angste børn.</p>
+    </div>
+  </div>
+  <h3>Sådan fremstår videoen for barnet</h3>
+  <ul class="amber">
+    <li><strong>Stort fladt videopanel foran barnet</strong>, ca. 1,7 m bredt, placeret 1,5 m fremme. Som at se en biograf-skærm svæve i luften.</li>
+    <li><strong>Panelet følger blidt med hovedet</strong>, drejer barnet hovedet, glider panelet med, så det altid er foran. Det "låser sig" ikke fast på væggen i rummet.</li>
+    <li><strong>Panelet holder sig vandret</strong>, tipper aldrig sidelæns eller op/ned, selv om barnet kigger op eller ned. Det reducerer kvalme.</li>
+    <li><strong>Hospitalsrummet er stadig synligt</strong> rundt om panelet, passthrough er aktivt. Barnet kan stadig se dig og sengen.</li>
+    <li><strong>Lyden afspilles</strong> i brillens indbyggede højtalere. Hvis tilladelser ikke er givet, starter videoen muted og slår automatisk lyden til efter 1 sekund.</li>
+  </ul>
   <h3>Sådan introducerer du det</h3>
   <div class="script-box">
     "Jeg viser dig en lille film inde i brillen, så du kan se præcis hvad der kommer til at ske. Der dukker en stor skærm op foran dig, du kan stadig se mig og rummet. Filmen er kun et par minutter lang, og lukker sig selv når den er færdig."
@@ -743,8 +932,8 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
     </div>
     <div class="gesture">
       <span class="icon">👏</span>
-      <h4>Klap-gestik</h4>
-      <p>Hænderne sammen i 6 sek, samme exit som alle andre oplevelser.</p>
+      <h4>Klap-bevægelse</h4>
+      <p>Hænderne sammen i 6 sek, samme afslutning som alle andre oplevelser.</p>
     </div>
     <div class="gesture">
       <span class="icon">🤏</span>
@@ -785,7 +974,7 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
   <div class="callout">
     <strong>Samme tekniske opsætning som informationsvideoerne:</strong> stort fladt videopanel der svæver foran barnet, følger blidt med hovedet, holder sig vandret, og afspilles i AR-passthrough så hospitalsrummet stadig er synligt rundt om.
   </div>
-  <h3>Sådan starter du en tegnefilm</h3>
+  <h3>Sådan starter spillet</h3>
   <div class="step-grid">
     <div class="step orange">
       <div class="step-num">1</div>
@@ -805,7 +994,30 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
     <div class="step orange">
       <div class="step-num">4</div>
       <h4>Filmen lukker sig selv</h4>
-      <p>Når filmen er færdig, lukker brillen sessionen automatisk efter 1 sekund. Klap-gestik virker også til at afslutte tidligt.</p>
+      <p>Når filmen er færdig, lukker brillen sessionen automatisk efter 1 sekund. Klap-bevægelsen virker også til at afslutte tidligt.</p>
+    </div>
+  </div>
+  <h3>Hvornår bruger man den?</h3>
+  <div class="step-grid">
+    <div class="step orange">
+      <div class="step-num">1</div>
+      <h4>Ved ventetid</h4>
+      <p>Mens et barn venter på laboratoriesvar, en tilkaldelse, eller mellem to procedurer.</p>
+    </div>
+    <div class="step orange">
+      <div class="step-num">2</div>
+      <h4>Som belønning</h4>
+      <p>Efter en svær procedure. Børn forbinder oplevelsen positivt med afdelingen.</p>
+    </div>
+    <div class="step orange">
+      <div class="step-num">3</div>
+      <h4>Til et grædende barn</h4>
+      <p>Skifter fokus uden krav til interaktion. God til at lande efter en stresset stund.</p>
+    </div>
+    <div class="step orange">
+      <div class="step-num">4</div>
+      <h4>Til de helt små</h4>
+      <p>Fra 3 år, ingen instruktion krævet. Børnevenligt indhold uden medicinsk relation.</p>
     </div>
   </div>
   <h3>Sådan introducerer du det</h3>
@@ -815,7 +1027,7 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
   <h3>Hvad du skal kigge efter</h3>
   <ul class="amber">
     <li><strong>Barnet kan stadig høre dig</strong>, lyden er ikke isolerende. Tal roligt og normalt.</li>
-    <li><strong>Hvis barnet bliver urolig</strong>, afslut med klap-gestik. Filmen kan altid genstartes senere.</li>
+    <li><strong>Hvis barnet bliver urolig</strong>, afslut med klap-bevægelsen. Filmen kan altid genstartes senere.</li>
     <li><strong>Pause med kort knib</strong>, godt hvis et søskende eller en forælder kommer ind i rummet og barnet vil se hvem det er.</li>
     <li><strong>Skærmen følger hovedet blidt</strong>, barnet kan ikke "miste" filmen ved at dreje hovedet. Det skaber tryghed for små børn.</li>
   </ul>
@@ -833,12 +1045,12 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
     <tbody>
       <tr>
         <td>Nålestik / blodprøve under 5 min</td>
-        <td><strong>Krystal Banen</strong></td>
+        <td><strong>Krystalbanen</strong></td>
         <td>Aktiv distraktion virker bedst ved kortvarige stik. Barnet ser ikke nålen.</td>
       </tr>
       <tr>
         <td>IV-anlæggelse, sårpleje</td>
-        <td><strong>Krystal Banen</strong></td>
+        <td><strong>Krystalbanen</strong></td>
         <td>Holder den frie arm beskæftiget, ingen risiko for at trække i den anden arm.</td>
       </tr>
       <tr>
@@ -859,7 +1071,7 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
       <tr>
         <td>Forberedelse til blodprøve / venflon</td>
         <td><strong>Informationsvideo: Blodprøve</strong></td>
-        <td>Hele forløbet vist på forhånd. Brug også Krystal Banen under selve stikket.</td>
+        <td>Hele forløbet vist på forhånd. Brug også Krystalbanen under selve stikket.</td>
       </tr>
       <tr>
         <td>Ventetid mellem procedurer / på laboratoriesvar</td>
@@ -878,17 +1090,17 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
       </tr>
       <tr>
         <td>Optakt til procedure</td>
-        <td><strong>Puste Ven</strong></td>
+        <td><strong>Pusteven</strong></td>
         <td>Sænker puls og angst inden indgrebet starter.</td>
       </tr>
       <tr>
         <td>Efter en stresset oplevelse</td>
-        <td><strong>Puste Ven</strong> eller <strong>Sommer Fugl</strong></td>
+        <td><strong>Pusteven</strong> eller <strong>Sommer Fugl</strong></td>
         <td>Vejrtrækning hvis barnet er pirret. Sommerfugle hvis barnet er overvældet og helst vil have ro.</td>
       </tr>
       <tr>
         <td>Søvnløshed / aftenrutine</td>
-        <td><strong>Puste Ven</strong></td>
+        <td><strong>Pusteven</strong></td>
         <td>5 min boks-vejrtrækning er klinisk dokumenteret beroligende.</td>
       </tr>
       <tr>
@@ -927,7 +1139,7 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
         <td>Bed barnet sænke begge arme, vent 4 sek, og start sessionen igen. Den frie hånd skal være højest når sessionen starter.</td>
       </tr>
       <tr>
-        <td>Boblen i Krystal Banen reagerer ikke</td>
+        <td>Boblen i Krystalbanen reagerer ikke</td>
         <td>Vrikket er for blidt. Vis selv og overdriv lidt. Hvis stadig ikke, hånden er måske ude af brillens synsfelt, løft den op foran ansigtet.</td>
       </tr>
       <tr>
@@ -955,8 +1167,8 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
         <td>Tracking-fejl. Klap-afslut og start sessionen igen. Sørg for at brillens kameraer ikke er dækket.</td>
       </tr>
       <tr>
-        <td>Klap-gestikken virker ikke</td>
-        <td>Mindst én hånd er ude af brillens synsfelt (ligger under et tæppe, eller foran kroppen). Bed barnet løfte begge hænder, eller brug <span class="inline-code">×</span>-knappen i overlay'et.</td>
+        <td>Klap-bevægelsen virker ikke</td>
+        <td>Mindst én hånd er ude af brillens synsfelt (ligger under et tæppe, eller foran kroppen). Bed barnet løfte begge hænder, eller brug <span class="inline-code">×</span>-knappen i startmenuen.</td>
       </tr>
       <tr>
         <td>Billedet er for mørkt / svært at se</td>
@@ -964,7 +1176,7 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
       </tr>
       <tr>
         <td>Barnet bliver svimmelt</td>
-        <td>Afslut straks med klap-gestikken. Tag brillen forsigtigt af. Lad barnet sidde stille 1–2 minutter. Genoptag ikke samme dag.</td>
+        <td>Afslut straks med klap-bevægelsen. Tag brillen forsigtigt af. Lad barnet sidde stille 1–2 minutter. Genoptag ikke samme dag.</td>
       </tr>
     </tbody>
   </table>
@@ -995,23 +1207,23 @@ footer { max-width: 1100px; margin: 32px auto 0 auto; text-align: center; color:
   <h2><span class="num">✓</span>1-minuts huskeliste</h2>
   <p>Det du skal kunne huske udenad, alt andet er der støtte til i appen.</p>
   <ul>
-    <li><strong>💎 Krystal Banen</strong> = aktivt spil under nålestik. Vrid håndleddet for at skifte bane.</li>
+    <li><strong>💎 Krystalbanen</strong> = aktivt spil under nålestik. Vrid håndleddet for at skifte bane.</li>
     <li><strong>🦷 Bag Tænderne</strong> = tandlæge-distraktion. Vrid for at vælge tand, tryk for at rense.</li>
     <li><strong>🀄 Mahjong</strong> = roligt parfindings-spil til lange ophold. Sigt og tryk for at vælge.</li>
     <li><strong>🦋 Sommer Fugl</strong> = sansestimulering uden mål. Bevæg hånden, så følger sommerfuglen.</li>
-    <li><strong>🫧 Puste Ven</strong> = guidet vejrtrækning. Hænderne behøver ikke bruges under selve øvelsen.</li>
+    <li><strong>🫧 Pusteven</strong> = guidet vejrtrækning. Hænderne behøver ikke bruges under selve øvelsen.</li>
     <li><strong>📺 Informationsvideoer</strong> = forberedelse på CT, lattergas eller blodprøve. Stor skærm der svæver foran barnet, lukker sig selv når den er færdig.</li>
     <li><strong>🎬 Tegnefilm</strong> = ren underholdning til ventetid eller belønning. Samme videopanel som informationsvideoerne.</li>
     <li><strong>Ingen fysiske controllere</strong>, Quest 3 sporer barnets hænder direkte med kameraerne.</li>
     <li><strong>Hånden vælges automatisk</strong> ved at løfte den frie arm, eller efter 4 sek hvis barnet ikke kan.</li>
-    <li><strong>Afslut altid med 👏</strong>, hænderne sammen i 6 sek. HUD-bjælken viser nedtælling.</li>
+    <li><strong>Afslut altid med 👏</strong>, hold hænderne sammen i 6 sek. Den hvide bjælke viser nedtælling.</li>
     <li><strong>Stop straks</strong> ved kvalme, svimmelhed eller hvis barnet beder om det.</li>
     <li><strong>Aftør</strong> linser, skum-pude og hovedrem mellem hver patient. Ingen controllere at desinficere.</li>
   </ul>
 </section>
 </main>
 <footer>
-  NXT/Care Personalemanual · v1.4 · 5 spil · 3 informationsvideoer · 2 tegnefilm · Pædiatrisk afdeling · Spørgsmål? Kontakt afdelingsansvarlig eller NXT/Care support.
+  NXT/Care Personalemanual · v1.5 · 5 spil · 3 informationsvideoer · 2 tegnefilm · Pædiatrisk afdeling · Spørgsmål? Kontakt afdelingsansvarlig eller NXT/Care support.
 </footer>
 </body>
 </html>
